@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EVERYTHING EVERYWHERE ALL AT ONCE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+
+@font-face {
+    font-family: 'JoseonGulim';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@1.0/ChosunGu.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+    width:100%; height:100%; overflow:hidden; 
+    background: #ffffff;
+    font-family: 'JoseonGulim', 'Noto Sans KR', sans-serif;
+    cursor: none;
+    position: relative;
+}
+
+
+
+#background-container { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    z-index: 1; 
+}
+
+
+#background-container::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+        linear-gradient(#0033ff 1px, transparent 1px),
+        linear-gradient(90deg, #0033ff 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+#backgroundImg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 1; }
+
+
+#webcamVideo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    display: none;
+    z-index: 0; 
+}
+
+/* 웹캠 오버레이 */
+.webcam-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    z-index: 1; 
+}
+
+/* 캔버스가 배경 컨테이너 위에 오도록 z-index 추가 */
+canvas { 
+    display:block; 
+    position:absolute; 
+    top:0; 
+    left:0; 
+    background: transparent; 
+    z-index: 2;
+}
+
+/* --- 나머지 스타일은 동일 --- */
+
+.cursor-image {
+    position: fixed;
+    width: 120px;
+    height: 120px;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: none;
+    background-image: url('1.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.final-text { position:absolute; top:50%; left:50%; color:#0033ff; font-size:4rem; text-align:center; opacity:0; text-shadow: 0 0 15px #0033ff, 0 0 25px #0033ff, 0 0 35px rgba(0,51,255,0.3); transform: translate(-50%, -50%) scale(1); animation: breathe 5s ease-in-out infinite 5s, glow 3s ease-in-out infinite alternate; transition: opacity 6s ease-in; font-weight: normal; z-index: 20; line-height: 1.2; }
+@keyframes breathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); text-shadow: 0 0 15px #0033ff; }
+  50% { transform: translate(-50%, -50%) scale(1.03); text-shadow: 0 0 25px #0033ff; }
+}
+@keyframes glow {
+  0% { text-shadow: 0 0 15px #0033ff, 0 0 25px #0033ff, 0 0 35px rgba(0,51,255,0.3); }
+  100% { text-shadow: 0 0 20px #0033ff, 0 0 30px #0033ff, 0 0 40px rgba(0,51,255,0.5), 0 0 50px rgba(0,51,255,0.2); }
+}
+.subtitle-container { 
+    position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); 
+    width: 85%; max-width: 900px; 
+    background: #ffffff; 
+    border-radius: 8px; 
+    border: 1.5px solid #0033ff;
+    box-shadow: none;
+    padding: 20px 30px; 
+    color: #0033ff; 
+    font-size: 1.5rem; 
+    text-align: center; 
+    opacity: 0; 
+    transition: all 0.8s ease-in-out; 
+    pointer-events: none; 
+    z-index: 15; 
+    font-weight: 600;
+    line-height: 1.4;
+    text-shadow: none;
+}
+.cosmic-ui {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+.dimension-indicator {
+    position: absolute;
+    top: 20px; left: 20px;
+    background: #ffffff;
+    border: 1.5px solid #0033ff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: none;
+}
+/* 상단 제목 스타일 */
+.main-title {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 100;
+    color: #0033ff;
+}
+
+    .main-title h1 {
+        font-family: 'Anton', sans-serif;
+        font-size: 5.2rem;
+        font-weight: 400;
+        letter-spacing: 4px;
+        line-height: 1;
+        margin-bottom: 10px;
+        color: #0033ff;
+        text-transform: uppercase;
+    }
+
+.main-title p {
+    font-size: 1.3rem;
+    font-weight: 300;
+    letter-spacing: 3px;
+    opacity: 0.8;
+    color: #0033ff;
+}
+
+/* 하단 UI 스타일 */
+.bottom-ui {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 20px;
+}
+
+/* 왼쪽 하단: 단계 설명 */
+.stage-description {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid #0033ff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.stage-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0033ff;
+    letter-spacing: 1px;
+}
+
+/* 오른쪽 하단: 진행도 바 */
+.progress-container {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid #0033ff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.progress-bar {
+    width: 120px;
+    height: 8px;
+    background: rgba(0, 51, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #0033ff;
+    width: 0%;
+    transition: width 1s ease;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0033ff;
+    white-space: nowrap;
+}
+
+.subtitle-container.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+</style>
+</head>
+<body>
+
+<div id="background-container">
+    <img id="backgroundImg" src="" alt="Multiverse Background">
+    <video id="webcamVideo" autoplay playsinline muted loop></video>
+    <div class="webcam-overlay" id="webcamOverlay"></div>
+</div>
+<canvas id="canvas"></canvas>
+<div class="final-text" id="finalText">You are everything, everywhere, all at once.</div>
+<div class="cursor-image" id="cursorImage"></div>
+<div class="subtitle-container" id="subtitleContainer">
+    <p id="subtitleText"></p>
+</div>
+
+
+<!-- 상단 제목 -->
+<div class="main-title">
+    <h1>EVERYTHING EVERYWHERE ALL AT ONCE</h1>
+    <p>An Interactive Multiverse Experience</p>
+</div>
+
+<!-- 하단 UI (왼쪽: 단계 설명, 오른쪽: 진행도 바) -->
+<div class="bottom-ui">
+    <!-- 왼쪽 하단: 단계 설명 -->
+    <div class="stage-description" id="stageDescription">
+        <span class="stage-text">CHOOSING DIMENSION</span>
+    </div>
+    
+    <!-- 오른쪽 하단: 진행도 바 -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0/7</div>
+    </div>
+</div>
+
+<script>
+// -------------------- Setup --------------------
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const cursorImage = document.getElementById('cursorImage');
+const webcamVideo = document.getElementById('webcamVideo');
+const webcamOverlay = document.getElementById('webcamOverlay');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const width = canvas.width;
+const height = canvas.height;
+const centerX = width / 2;
+const centerY = height / 2;
+
+let mouse = {x: centerX, y: centerY, down:false, hoverTarget: null};
+window.addEventListener('mousemove', e => { 
+    mouse.x = e.clientX; 
+    mouse.y = e.clientY; 
+    cursorImage.style.left = (e.clientX - 60) + 'px';
+    cursorImage.style.top = (e.clientY - 60) + 'px';
+    cursorImage.style.opacity = '1';
+    cursorImage.style.backgroundImage = "url('1.png')";
+    cursorImage.style.borderRadius = "0";
+});
+window.addEventListener('mousedown', (e)=>{
+    mouse.down = true;
+    if (section === 0 && mouse.hoverTarget) {
+        mouse.hoverTarget.isSelected = true;
+        particles.forEach(p => { if (!p.isSelected) p.shatter(); });
+        advanceSection();
+    } else if (section === 3) {
+        playGlitchSound();
+        for (let i = memoryFragments.length - 1; i >= 0; i--) {
+            const mem = memoryFragments[i];
+            const dist = Math.sqrt((mem.x - e.clientX)**2 + (mem.y - e.clientY)**2);
+            if (dist < mem.r) { mem.collect(); memoryFragments.splice(i, 1); break; }
+        }
+    } else if (section === 4 && isAwaitingFinalClick) {
+        initiateFinalCollapse();
+    }
+});
+window.addEventListener('mouseup', ()=>{
+    mouse.down = false;
+    if (section === 3) {
+        document.getElementById('backgroundImg').style.opacity = 0;
+        glitchEffect.type = 'none';
+    }
+    stopGlitchSound();
+});
+window.addEventListener('mouseleave', () => { cursorImage.style.opacity = '0'; });
+window.addEventListener('mouseenter', () => { cursorImage.style.opacity = '1'; });
+
+let section = 0; // 0:Choice, 1:Dive, 2:Fragmentation, 3:Chaos, 4:Convergence, 5:Climax, 6:Finale
+const sectionDurations = { 1: 4000, 2: 10000, 3: 25000 };
+let particles = [], embers = [], shockwaves = [], memoryFragments = [], glowParticles = [];
+let flashRadius = 0, flashAlpha = 1, screenShake = {x:0, y:0, intensity:0};
+let selectedBaseColor = null;
+let glitchEffect = { type: 'none', duration: 0 };
+let isAwaitingFinalClick = false;
+let convergenceStartTime = 0;
+
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const stageText = document.querySelector('.stage-text');
+const backgroundImg = document.getElementById('backgroundImg');
+let webcamStream = null;
+
+async function startWebcam() {
+    if (webcamStream) return true; // 이미 스트림이 있으면 성공으로 간주
+    try {
+        console.log('웹캠 시작 시도...');
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user'
+            } 
+        }); 
+        webcamStream = stream;
+        webcamVideo.srcObject = stream; 
+        await webcamVideo.play(); 
+        console.log('웹캠 성공적으로 시작됨');
+        return true;
+    } catch (err) { 
+        console.error('웹캠 시작 실패:', err);
+        return false;
+    } 
+}
+
+const multiverseBackgrounds = { 
+    "제빵사": "https://source.unsplash.com/1600x900/?bakery,kitchen", 
+    "엄마": "https://source.unsplash.com/1600x900/?cozy,home,family", 
+    "쿵푸 마스터": "https://source.unsplash.com/1600x900/?bamboo,temple,zen", 
+    "과학자": "https://source.unsplash.com/1600x900/?laboratory,quantum", 
+    "길가의 돌멩이": "https://source.unsplash.com/1600x900/?rocks,zen,meditation", 
+    "가수": "https://source.unsplash.com/1600x900/?stage,lights,concert",
+    "딸": "https://source.unsplash.com/1600x900/?daughter,family,love",
+    "아내": "https://source.unsplash.com/1600x900/?wife,marriage,relationship",
+    "아무것도 아닌": "https://source.unsplash.com/1600x900/?void,space,emptiness"
+};
+const memoryQuotes = [ 
+    "수많은 선택지 중 최악의 결과만 모인 우주가 바로 여기야.", "친절은, 우리가 혼란 속에서 길을 잃었을 때 사용하는 전략적이고 강력한 무기다.", "모든 새로운 발견은 그저 누군가의 기억일 뿐이야.", "아무것도 중요하지 않다면, 우리가 함께 겪는 모든 고통과 기쁨도 중요하지 않은 거겠지.", "당신은 모든 우주에서 가장 강력한 존재야.", "사랑은 우리가 선택하는 것이다. 아무리 작은 것이라도.", "우리는 모두 연결되어 있어. 모든 차원에서.", "가장 어두운 순간에도 빛이 있어. 당신 안에.", "무한한 가능성 속에서도 당신은 유일무이해.", "모든 것이 동시에 일어나고 있어. 지금 이 순간에도.", "당신은 이미 완벽해. 모든 버전의 당신이.", "가장 작은 행동이 가장 큰 변화를 만들어내.", "우리는 모두 같은 존재야. 다른 차원에서만.", "사랑은 모든 차원을 통과하는 유일한 힘이야.", "당신의 선택이 모든 우주를 구원할 수 있어.", "무한한 가능성 속에서도 당신은 특별해.", "모든 것이 연결되어 있다는 것을 기억해.", "가장 어려운 순간이 가장 중요한 순간이야.", "당신은 이미 모든 것을 알고 있어.", "사랑이 모든 답이야. 모든 차원에서."
+];
+
+// 베이글 대사 스타일의 최종 메시지들
+const finalBagelQuotes = [
+    "모든 것이 동시에 일어나고 있어. 지금 이 순간에도.",
+    "당신은 이미 완벽해. 모든 버전의 당신이.",
+    "가장 작은 행동이 가장 큰 변화를 만들어내.",
+    "우리는 모두 같은 존재야. 다른 차원에서만.",
+    "사랑은 모든 차원을 통과하는 유일한 힘이야.",
+    "당신의 선택이 모든 우주를 구원할 수 있어.",
+    "무한한 가능성 속에서도 당신은 특별해.",
+    "모든 것이 연결되어 있다는 것을 기억해.",
+    "가장 어려운 순간이 가장 중요한 순간이야.",
+    "당신은 이미 모든 것을 알고 있어.",
+    "사랑이 모든 답이야. 모든 차원에서.",
+    "무한한 우주에서도 당신은 유일무이해.",
+    "모든 차원에서 당신은 이미 완벽해.",
+    "가장 작은 순간이 가장 큰 의미를 가져.",
+    "우리는 모두 같은 꿈을 꾸고 있어.",
+    "사랑은 모든 답이야. 모든 차원에서.",
+    "당신은 이미 모든 것을 알고 있어.",
+    "가장 어려운 순간이 가장 중요한 순간이야.",
+    "모든 것이 연결되어 있다는 것을 기억해.",
+    "무한한 가능성 속에서도 당신은 특별해."
+];
+
+
+const colorPalette = [ 
+    // 네온 컬러
+    {r: 255, g: 0, b: 150}, {r: 0, g: 255, b: 255}, {r: 255, g: 255, b: 0}, {r: 255, g: 0, b: 255}, 
+    {r: 0, g: 255, b: 0}, {r: 255, g: 100, b: 0}, {r: 150, g: 0, b: 255}, {r: 255, g: 255, b: 255}, 
+    {r: 0, g: 200, b: 255}, {r: 255, g: 200, b: 0},
+    
+    // 파스텔 컬러
+    {r: 255, g: 182, b: 193}, {r: 173, g: 216, b: 230}, {r: 255, g: 218, b: 185}, {r: 221, g: 160, b: 221},
+    {r: 255, g: 228, b: 196}, {r: 240, g: 248, b: 255}, {r: 255, g: 239, b: 213}, {r: 230, g: 230, b: 250},
+    
+    // 어두운 컬러
+    {r: 139, g: 69, b: 19}, {r: 75, g: 0, b: 130}, {r: 0, g: 100, b: 0}, {r: 128, g: 0, b: 128},
+    {r: 25, g: 25, b: 112}, {r: 47, g: 79, b: 79}, {r: 105, g: 105, b: 105}, {r: 169, g: 169, b: 169},
+    
+    // 따뜻한 컬러
+    {r: 255, g: 69, b: 0}, {r: 255, g: 140, b: 0}, {r: 255, g: 215, b: 0}, {r: 255, g: 20, b: 147},
+    {r: 255, g: 105, b: 180}, {r: 255, g: 192, b: 203}, {r: 255, g: 160, b: 122}, {r: 255, g: 127, b: 80},
+    
+    // 차가운 컬러
+    {r: 0, g: 191, b: 255}, {r: 30, g: 144, b: 255}, {r: 0, g: 206, b: 209}, {r: 72, g: 209, b: 204},
+    {r: 0, g: 250, b: 154}, {r: 50, g: 205, b: 50}, {r: 124, g: 252, b: 0}, {r: 173, g: 255, b: 47},
+    
+    // 메탈릭 컬러
+    {r: 192, g: 192, b: 192}, {r: 255, g: 215, b: 0}, {r: 184, g: 134, b: 11}, {r: 218, g: 165, b: 32},
+    {r: 205, g: 127, b: 50}, {r: 160, g: 82, b: 45}, {r: 139, g: 69, b: 19}, {r: 101, g: 67, b: 33},
+    
+    // 특수 컬러
+    {r: 255, g: 0, b: 0}, {r: 0, g: 0, b: 255}, {r: 0, g: 128, b: 0}, {r: 128, g: 0, b: 128},
+    {r: 255, g: 165, b: 0}, {r: 0, g: 255, b: 127}, {r: 255, g: 0, b: 255}, {r: 0, g: 255, b: 255}
+];
+function getRandomColor() { const color = colorPalette[Math.floor(Math.random() * colorPalette.length)]; return `rgb(${color.r}, ${color.g}, ${color.b})`; }
+function getShadedColor(baseRgb, minBrightness = 0.3, maxBrightness = 1.0) { let [r, g, b] = baseRgb.match(/\d+/g).map(Number); let cmin = Math.min(r,g,b), cmax = Math.max(r,g,b), delta = cmax - cmin, h = 0, s = 0, l = 0; if (delta == 0) h = 0; else if (cmax == r) h = ((g - b) / delta) % 6; else if (cmax == g) h = (b - r) / delta + 2; else h = (r - g) / delta + 4; h = Math.round(h * 60); if (h < 0) h += 360; l = (cmax + cmin) / 2; s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l / 255 - 1)); l = (Math.random() * (maxBrightness - minBrightness) + minBrightness) * 100; s /= 100; l /= 100; let c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2, r2 = 0, g2 = 0, b2 = 0; if (0 <= h && h < 60) { r2 = c; g2 = x; b2 = 0; } else if (60 <= h && h < 120) { r2 = x; g2 = c; b2 = 0; } else if (120 <= h && h < 180) { r2 = 0; g2 = c; b2 = x; } else if (180 <= h && h < 240) { r2 = 0; g2 = x; b2 = c; } else if (240 <= h && h < 300) { r2 = x; g2 = 0; b2 = c; } else if (300 <= h && h < 360) { r2 = c; g2 = 0; b2 = x; } r = Math.round((r2 + m) * 255); g = Math.round((g2 + m) * 255); b = Math.round((b2 + m) * 255); return `rgb(${r}, ${g}, ${b})`; }
+
+// -------------------- Classes --------------------
+class Particle {
+    constructor(x, y, r, color, text = ""){ this.x = x; this.y = y; this.r = r; this.color = color; this.dx = (Math.random()-0.5)*0.8; this.dy = (Math.random()-0.5)*0.8; this.text = text; this.fontSize = 24; this.alpha = 1; this.isChoiceParticle = false; this.isSelected = false; this.isShattered = false; }
+    shatter() { this.isShattered = true; this.dx = (Math.random() - 0.5) * 15; this.dy = (Math.random() - 0.5) * 15; if (Math.random() < 0.3) playFallingSound(); }
+    update(){ if (section === 0 && this.isShattered) { this.x += this.dx; this.y += this.dy; this.alpha -= 0.02; this.dx *= 0.98; this.dy *= 0.98; } else if (section === 1) { if (this.isSelected) { this.dx += (centerX - this.x) * 0.01; this.dy += (centerY - this.y) * 0.01; this.r += 25; if(Math.random() < 0.2) shockwaves.push(new Shockwave(this.x, this.y, this.r, this.color)); } else { this.alpha -= 0.05; } } else { this.x += this.dx; this.y += this.dy; if(glitchEffect.type === 'gravity') { this.dy += 0.1; } if((this.x < this.r && this.dx < 0) || (this.x > width - this.r && this.dx > 0)) this.dx *= -0.8; if((this.y < this.r && this.dy < 0) || (this.y > height - this.r && this.dy > 0)) this.dy *= -0.8; if(mouse.down && section === 3){ this.color = getRandomColor(); if (this.text && Math.random() < 0.15) { this.text = phrases[Math.floor(Math.random() * phrases.length)]; changeBackground(this.text); } } } if(section === 4){ const vecX = centerX - this.x; const vecY = centerY - this.y; const dist = Math.sqrt(vecX*vecX + vecY*vecY); const pullForce = 0.001 * (1 - dist / width); this.dx += vecX * pullForce; this.dy += vecY * pullForce; const orbitSpeed = 0.05; this.dx += -vecY * orbitSpeed / Math.max(dist, 1); this.dy += vecX * orbitSpeed / Math.max(dist, 1); this.dx *= 0.99; this.dy *= 0.99; if (dist < 20) this.r -= 0.2; } }
+    draw(ctx){ if(this.r <= 0.1 || this.alpha <= 0) return; ctx.save(); ctx.globalAlpha = this.alpha; const glowIntensity = this.isChoiceParticle && this === mouse.hoverTarget ? 30 : section === 1 && this.isSelected ? 20 : 10; ctx.shadowColor = this.color; ctx.shadowBlur = glowIntensity; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); if (this.isChoiceParticle && this === mouse.hoverTarget) { ctx.shadowBlur = glowIntensity * 1.2; ctx.globalAlpha = this.alpha * 0.2; ctx.beginPath(); ctx.arc(this.x, this.y, this.r * 1.3, 0, Math.PI*2); ctx.fill(); } ctx.restore(); if(this.text && !this.isChoiceParticle){ ctx.save(); ctx.fillStyle = `rgba(255,255,255,${0.9 * this.alpha})`; ctx.font = `${this.fontSize}px 'JoseonGulim'`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowColor = this.color; ctx.shadowBlur = 8; ctx.fillText(this.text, this.x, this.y); ctx.restore(); } }
+}
+class MemoryFragment extends Particle {
+    constructor(x, y) { super(x, y, 15, 'white'); this.hue = 0; }
+    update() { super.update(); this.hue = (this.hue + 2) % 360; }
+    draw(ctx) { if(this.r <= 0.1) return; this.color = `hsl(${this.hue}, 100%, 75%)`; ctx.save(); ctx.fillStyle = this.color; ctx.shadowColor = this.color; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
+    collect() { playChimeSound(); showSubtitle(`" ${memoryQuotes[Math.floor(Math.random() * memoryQuotes.length)]} "`); particles.forEach(p => p.color = this.color); setTimeout(() => particles.forEach(p => p.color = getRandomColor()), 800); }
+}
+class Shockwave { constructor(x, y, r, color) { this.x = x; this.y = y; this.r = r; this.color = color; this.life = 1; } update() { this.r += 8; this.life -= 0.02; } draw(ctx) { if (this.life <= 0) return; ctx.save(); ctx.strokeStyle = this.color; ctx.globalAlpha = this.life; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.stroke(); ctx.restore(); } }
+class Ember { constructor(){ const angle = Math.random() * Math.PI * 2; const speed = Math.random() * 1.5; this.x = centerX; this.y = centerY; this.dx = Math.cos(angle) * speed; this.dy = Math.sin(angle) * speed; this.r = Math.random() * 2.5; this.life = 1; this.color = getRandomColor(); this.glowIntensity = Math.random() * 15 + 5; } update(){ this.x += this.dx; this.y += this.dy; this.life -= 0.003; this.glowIntensity += Math.sin(Date.now() * 0.01) * 1; } draw(ctx){ if(this.life <= 0) return; ctx.save(); ctx.shadowColor = this.color; ctx.shadowBlur = this.glowIntensity; ctx.fillStyle = `rgba(${parseInt(this.color.substring(4))}, ${parseInt(this.color.substring(this.color.indexOf(',')+1))}, ${parseInt(this.color.substring(this.color.lastIndexOf(',')+1))}, ${this.life})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2); ctx.fill(); ctx.restore(); } }
+class GlowParticle { constructor(x, y) { this.x = x; this.y = y; this.r = Math.random() * 3 + 1; this.dx = (Math.random() - 0.5) * 2; this.dy = (Math.random() - 0.5) * 2; this.color = getRandomColor(); this.life = 1; this.pulse = 0; } update() { this.x += this.dx; this.y += this.dy; this.life -= 0.01; this.pulse += 0.1; this.dx *= 0.99; this.dy *= 0.99; } draw(ctx) { if (this.life <= 0) return; ctx.save(); const pulseSize = this.r + Math.sin(this.pulse) * 1; ctx.shadowColor = this.color; ctx.shadowBlur = 15 + Math.sin(this.pulse) * 5; ctx.globalAlpha = this.life; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, pulseSize, 0, Math.PI*2); ctx.fill(); ctx.restore(); } }
+const phrases = Object.keys(multiverseBackgrounds);
+
+const subtitleContainer = document.getElementById('subtitleContainer');
+const subtitleText = document.getElementById('subtitleText');
+let subtitleTimeout;
+function showSubtitle(message) { clearTimeout(subtitleTimeout); subtitleText.textContent = message; subtitleContainer.classList.add('show'); subtitleTimeout = setTimeout(() => { subtitleContainer.classList.remove('show'); }, 8000); }
+
+function updateProgress() {
+    const progress = ((section + 1) / 7) * 100;
+    progressFill.style.width = `${progress}%`;
+    progressText.textContent = `${section + 1}/7`;
+}
+
+function updateStage() {
+    const stageNames = [
+        'CHOOSING DIMENSION',
+        'DIVING INTO REALITY', 
+        'FRAGMENTING SPACE-TIME',
+        'CHAOS REIGNING',
+        'CONVERGING UNIVERSES',
+        'CLIMAX APPROACHING',
+        'UNITY ACHIEVED'
+    ];
+    stageText.textContent = stageNames[section] || 'MULTIVERSE ACTIVE';
+}
+const sectionMessages = { 0: "무한한 우주에서 당신의 정체성을 선택하세요. 모든 가능성이 여기에 있습니다.", 1: "선택한 차원으로의 여행이 시작됩니다...", 2: "당신의 선택이 만들어낸 현실. 모든 것이 조각나고 흩어집니다.", 3: "혼돈의 바다에서 '기억의 파편'을 찾아 클릭하세요. 그 안에 진실이 있습니다.", 4: "모든 차원이 소용돌이칩니다. 클릭하여 모든 것을 하나로 통합하세요.", 5: "통합의 순간, 모든 경계가 사라지고 본질이 드러납니다.", 6: "당신은 모든 것이며, 어디에나 존재하며, 언제나 함께합니다. 온전한 당신." };
+
+let currentBgUrl = '';
+function changeBackground(textForBackground) { const imageUrl = multiverseBackgrounds[textForBackground]; if (imageUrl && imageUrl !== currentBgUrl) { currentBgUrl = imageUrl; backgroundImg.src = imageUrl; backgroundImg.style.opacity = 1; } }
+
+function advanceSection() { if (section < 6) { section++; console.log("Advancing to section: ", section); handleSectionChange(); if (sectionDurations[section] !== undefined) setTimeout(advanceSection, sectionDurations[section]); } }
+function handleSectionChange(){
+    showSubtitle(sectionMessages[section]);
+    updateProgress();
+    updateStage();
+
+    if (section === 0) { particles = []; glowParticles = []; for (let i = 0; i < 200; i++) { const p = new Particle(Math.random()*width, Math.random()*height, 5 + Math.random() * 10, getRandomColor()); p.isChoiceParticle = true; particles.push(p); } for (let i = 0; i < 20; i++) glowParticles.push(new GlowParticle(Math.random()*width, Math.random()*height)); } 
+    else if (section === 1) { const selectedParticle = particles.find(p => p.isSelected); if (selectedParticle) selectedBaseColor = selectedParticle.color; } 
+    else if (section === 2) { particles = []; shockwaves = []; glowParticles = []; for(let i=0; i<150; i++) { const shadedColor = getShadedColor(selectedBaseColor || 'rgb(200,200,200)'); particles.push(new Particle(Math.random()*width, Math.random()*height, 2 + Math.random()*3, shadedColor)); } for (let i = 0; i < 30; i++) glowParticles.push(new GlowParticle(Math.random()*width, Math.random()*height)); } 
+    else if (section === 3) { for(let i=0; i<120; i++) particles.push(new Particle(Math.random()*width, Math.random()*height, 3+Math.random()*5, getRandomColor(), phrases[Math.floor(Math.random() * phrases.length)])); memoryFragments = []; for(let i=0; i<3; i++) memoryFragments.push(new MemoryFragment(Math.random()*width, Math.random()*height)); glowParticles = []; for (let i = 0; i < 40; i++) glowParticles.push(new GlowParticle(Math.random()*width, Math.random()*height)); } 
+    else if (section === 4) { backgroundImg.style.opacity = 0; playSwellingSound(15); convergenceStartTime = Date.now(); } 
+    else if (section === 5) { playClimaxSound(); for(let i = 0; i < 200; i++) embers.push(new Ember()); glowParticles = []; for (let i = 0; i < 50; i++) glowParticles.push(new GlowParticle(centerX + (Math.random()-0.5)*100, centerY + (Math.random()-0.5)*100)); } 
+    else if (section === 6) { 
+        document.body.style.background = '#000000';
+        document.getElementById('finalText').style.opacity = 1;
+        
+        // 베이글 대사 스타일 메시지 표시
+        const bagelMessage = finalBagelQuotes[Math.floor(Math.random() * finalBagelQuotes.length)];
+        showSubtitle(bagelMessage);
+        
+        if (webcamStream) {
+            webcamVideo.style.zIndex = '18';
+            webcamOverlay.style.zIndex = '19';
+            webcamVideo.style.display = 'block';
+            webcamOverlay.style.display = 'block';
+            webcamVideo.style.filter = 'blur(1px) brightness(1.2) contrast(2) saturate(0) grayscale(100%)';
+            webcamVideo.style.opacity = 1;
+            canvas.style.display = 'none';
+        }
+    }
+}
+
+// --- 중복 선언된 함수를 하나로 정리 ---
+async function initiateFinalCollapse() {
+    isAwaitingFinalClick = false; 
+    playFinalCollapseSound();
+    
+    // 흰 배경 제거
+    document.body.style.background = 'transparent';
+    
+    // 웹캠 배경 효과 시작 (이미 권한이 있을 가능성이 높음)
+    const success = await startWebcam();
+    if (success) {
+        console.log("🎥 Webcam showing for finale");
+        webcamVideo.style.display = 'block';
+        webcamOverlay.style.display = 'block';
+        webcamVideo.style.filter = 'blur(5px) brightness(1.1)';
+        webcamVideo.style.opacity = 1; // opacity를 1로 설정
+    } else {
+        console.warn("⚠️ Webcam not available in finale.");
+    }
+    
+    const collapseInterval = setInterval(() => {
+        let allGone = true;
+        particles.forEach(p => {
+            p.dx += (centerX - p.x) * 0.05; p.dy += (centerY - p.y) * 0.05;
+            p.x += p.dx; p.y += p.dy; p.r -= 0.2;
+            if (p.r > 0) allGone = false;
+        });
+        if (allGone) { clearInterval(collapseInterval); advanceSection(); }
+    }, 16);
+}
+
+
+function animate(){
+    ctx.save();
+    if(screenShake.intensity > 0) { ctx.translate((Math.random() - 0.5) * screenShake.intensity, (Math.random() - 0.5) * screenShake.intensity); screenShake.intensity *= 0.9; }
+
+    const isBackgroundActive = backgroundImg.style.opacity > 0;
+    if (isBackgroundActive) {
+        ctx.clearRect(-width, -height, width * 2, height * 2);
+    } else {
+        const clearAlpha = section === 4 ? 0.1 : 0.25;
+        ctx.fillStyle = `rgba(255, 255, 255, ${clearAlpha})`;
+        ctx.fillRect(-width, -height, width * 2, height * 2);
+    }
+    
+    if (mouse.down && section === 3) { if(Math.random() < 0.3) screenShake.intensity = 15; if(Math.random() < 0.01 && glitchEffect.duration <= 0) { glitchEffect.type = 'gravity'; glitchEffect.duration = 120; } }
+    if(glitchEffect.duration > 0) glitchEffect.duration--; else glitchEffect.type = 'none';
+
+    mouse.hoverTarget = null;
+    if (section === 0) { for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; const dist = Math.sqrt((p.x - mouse.x)**2 + (p.y - mouse.y)**2); if(dist < p.r && !p.isShattered) { mouse.hoverTarget = p; break; } } }
+
+    if (section < 5) {
+        particles.forEach(p => { p.update(); p.draw(ctx); });
+        memoryFragments.forEach(mem => { mem.update(); mem.draw(ctx); });
+        glowParticles.forEach(gp => { gp.update(); gp.draw(ctx); });
+        particles = particles.filter(p => !((p.isShattered && p.alpha <= 0) || (section === 1 && !p.isSelected && p.alpha <= 0)));
+        glowParticles = glowParticles.filter(gp => gp.life > 0);
+        if (section === 4 && !isAwaitingFinalClick) { if(Date.now() - convergenceStartTime > 10000) { isAwaitingFinalClick = true; showSubtitle(sectionMessages[section]); } }
+    } else if (section === 5) {
+        if(flashRadius < width) { flashRadius += width * 0.03; } else { flashAlpha -= 0.02; }
+        let grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, flashRadius);
+        grad.addColorStop(0, `rgba(255,255,255,${flashAlpha})`); grad.addColorStop(0.4, `rgba(255, 255, 0, ${flashAlpha*0.7})`); grad.addColorStop(0.7, `rgba(255, 0, 255, ${flashAlpha*0.7})`); grad.addColorStop(1, `rgba(0,0,0,0)`);
+        ctx.fillStyle = grad; ctx.fillRect(-width, -height, width*2, height*2);
+        glowParticles.forEach(gp => { gp.update(); gp.draw(ctx); });
+        glowParticles = glowParticles.filter(gp => gp.life > 0);
+        if(flashAlpha <= 0) advanceSection();
+    } else if (section === 6) {
+        embers.forEach(e => { e.update(); e.draw(ctx); }); embers = embers.filter(e => e.life > 0);
+        glowParticles.forEach(gp => { gp.update(); gp.draw(ctx); }); glowParticles = glowParticles.filter(gp => gp.life > 0);
+    }
+    shockwaves.forEach(sw => { sw.update(); sw.draw(ctx); }); shockwaves = shockwaves.filter(sw => sw.life > 0);
+    ctx.restore();
+    requestAnimationFrame(animate);
+}
+
+// -------------------- Sound Engine (생략 - 동일) --------------------
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); let glitchNode = null; function playTone(frequency, duration, volume = 0.2){ const oscillator = audioCtx.createOscillator(); const gainNode = audioCtx.createGain(); oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime); gainNode.gain.setValueAtTime(volume, audioCtx.currentTime); oscillator.connect(gainNode); gainNode.connect(audioCtx.destination); oscillator.start(); oscillator.stop(audioCtx.currentTime + duration); }
+function playGlitchSound() { if (Math.random() < 0.1) { playWhiteNoiseBurst(); return; } if (glitchNode) return; const duration = 0.05 + Math.random() * 0.2; glitchNode = audioCtx.createOscillator(); const gainNode = audioCtx.createGain(); glitchNode.type = ['sawtooth', 'square', 'triangle'][Math.floor(Math.random()*3)]; glitchNode.frequency.setValueAtTime(60 + Math.random() * 200, audioCtx.currentTime); glitchNode.detune.setValueAtTime(Math.random() * 100, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime); gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration); glitchNode.connect(gainNode); gainNode.connect(audioCtx.destination); glitchNode.start(); glitchNode.stop(audioCtx.currentTime + duration); glitchNode.onended = () => { glitchNode = null; if(mouse.down && section === 3) playGlitchSound(); } } function stopGlitchSound(){ if(glitchNode) glitchNode.onended = null; }
+function playSwellingSound(duration) { const bassOsc = audioCtx.createOscillator(); const bassGain = audioCtx.createGain(); bassOsc.type = 'sine'; bassOsc.frequency.setValueAtTime(60, audioCtx.currentTime); bassOsc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + duration); bassGain.gain.setValueAtTime(0.01, audioCtx.currentTime); bassGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + duration * 0.8); bassGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration); bassOsc.connect(bassGain); bassGain.connect(audioCtx.destination); bassOsc.start(); bassOsc.stop(audioCtx.currentTime + duration); const harmonicOsc = audioCtx.createOscillator(); const harmonicGain = audioCtx.createGain(); harmonicOsc.type = 'sine'; harmonicOsc.frequency.setValueAtTime(200, audioCtx.currentTime); harmonicOsc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + duration); harmonicGain.gain.setValueAtTime(0.01, audioCtx.currentTime); harmonicGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + duration * 0.8); harmonicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration); harmonicOsc.connect(harmonicGain); harmonicGain.connect(audioCtx.destination); harmonicOsc.start(); harmonicOsc.stop(audioCtx.currentTime + duration); }
+function playClimaxSound() { const rumble = audioCtx.createOscillator(); const rumbleGain = audioCtx.createGain(); rumble.type = 'sine'; rumble.frequency.setValueAtTime(40, audioCtx.currentTime); rumbleGain.gain.setValueAtTime(0.8, audioCtx.currentTime); rumbleGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 2.5); rumble.connect(rumbleGain); rumbleGain.connect(audioCtx.destination); rumble.start(); rumble.stop(audioCtx.currentTime + 2.5); const shimmer = audioCtx.createOscillator(); const shimmerGain = audioCtx.createGain(); shimmer.type = 'sine'; shimmer.frequency.setValueAtTime(1200, audioCtx.currentTime); shimmerGain.gain.setValueAtTime(0, audioCtx.currentTime); shimmerGain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 1.5); shimmerGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2.5); shimmer.connect(shimmerGain); shimmerGain.connect(audioCtx.destination); shimmer.start(); shimmer.stop(audioCtx.currentTime + 2.5); const harmonic = audioCtx.createOscillator(); const harmonicGain = audioCtx.createGain(); harmonic.type = 'triangle'; harmonic.frequency.setValueAtTime(600, audioCtx.currentTime); harmonicGain.gain.setValueAtTime(0, audioCtx.currentTime); harmonicGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 1.0); harmonicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2.5); harmonic.connect(harmonicGain); harmonicGain.connect(audioCtx.destination); harmonic.start(); harmonic.stop(audioCtx.currentTime + 2.5); }
+function playChimeSound() { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.0); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 1.0); }
+function playFallingSound() { const sounds = [ () => { const osc1 = audioCtx.createOscillator(); const gain1 = audioCtx.createGain(); osc1.type = 'sine'; osc1.frequency.setValueAtTime(400, audioCtx.currentTime); osc1.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.8); gain1.gain.setValueAtTime(0.3, audioCtx.currentTime); gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8); osc1.connect(gain1); gain1.connect(audioCtx.destination); osc1.start(); osc1.stop(audioCtx.currentTime + 0.8); }, () => { const osc2 = audioCtx.createOscillator(); const gain2 = audioCtx.createGain(); osc2.type = 'triangle'; osc2.frequency.setValueAtTime(600, audioCtx.currentTime); osc2.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 1.2); gain2.gain.setValueAtTime(0.2, audioCtx.currentTime); gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2); osc2.connect(gain2); gain2.connect(audioCtx.destination); osc2.start(); osc2.stop(audioCtx.currentTime + 1.2); }, () => { const osc3 = audioCtx.createOscillator(); const gain3 = audioCtx.createGain(); osc3.type = 'sawtooth'; osc3.frequency.setValueAtTime(800, audioCtx.currentTime); osc3.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 1.0); gain3.gain.setValueAtTime(0.25, audioCtx.currentTime); gain3.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0); osc3.connect(gain3); gain3.connect(audioCtx.destination); osc3.start(); osc3.stop(audioCtx.currentTime + 1.0); } ]; const randomSound = sounds[Math.floor(Math.random() * sounds.length)]; randomSound(); }
+function playFinalCollapseSound() { const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(500, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.5); gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }
+function playWhiteNoiseBurst() { const bufferSize = audioCtx.sampleRate * 0.2; const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate); let data = buffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; } const noiseNode = audioCtx.createBufferSource(); noiseNode.buffer = buffer; const gainNode = audioCtx.createGain(); gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15); noiseNode.connect(gainNode); gainNode.connect(audioCtx.destination); noiseNode.start(); }
+
+async function init() {
+    // 페이지 로드 시 바로 웹캠 권한을 요청하여 마지막에 부드럽게 표시되도록 준비
+    await startWebcam();
+    handleSectionChange();
+    animate();
+}
+
+
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
